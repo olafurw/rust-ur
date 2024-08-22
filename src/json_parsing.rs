@@ -17,7 +17,7 @@ fn word_is_alphabetic(word: &String) -> bool {
     return true;
 }
 
-fn words_to_vec(filename: &str) -> BTreeSet<String> {
+pub fn words_from_json(filename: &str) -> BTreeSet<String> {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
     let mut words = BTreeSet::new();
@@ -33,18 +33,4 @@ fn words_to_vec(filename: &str) -> BTreeSet<String> {
     }
 
     return words;
-}
-
-fn main() {
-    let is_words = words_to_vec("swedish.jsonl");
-    for word in is_words {
-        println!("{}", word);
-    }
-    //let se_words = words_to_vec("swedish.jsonl");
-    
-    /*for word in is_words {
-        if se_words.contains(&word) {
-            println!("{}", word);
-        }
-    }*/
 }
