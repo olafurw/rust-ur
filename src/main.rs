@@ -15,8 +15,8 @@ fn words_to_vec(filename: &str) -> BTreeSet<String> {
 }
 
 fn main() {
-    let is_words = words_to_vec("is_words.txt");
-    let se_words = words_to_vec("se_words.txt");
+    let is_words = words_to_vec("is.words");
+    let se_words = words_to_vec("se.words");
     
     for word in is_words {
         if se_words.contains(&word) {
