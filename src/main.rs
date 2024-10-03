@@ -1,12 +1,9 @@
-use deunicode::deunicode;
-use utils::{word_minus_ur, words_to_vec};
+use utils::{file_to_vec, words_from_jsonl};
 
 mod utils;
 
 fn main() {
-    let text = "åfløyer";
-    let sktext = deunicode(text);
-    
-    println!("Original: {}", text);
-    println!("NFC: {}", sktext);
+    let line = file_to_vec("danish.jsonl");
+    let words = words_from_jsonl(&line);
+    println!("{:?}", words);
 }
