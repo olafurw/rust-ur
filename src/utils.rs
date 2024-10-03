@@ -34,6 +34,39 @@ pub fn words_to_btree_set(words: &Vec<String>) -> BTreeSet<String> {
     btree_words
 }
 
+
+#[cfg(test)]
+mod words_to_btree_set_test {
+    use super::*;
+
+    #[test]
+    fn test() {
+        {
+            let words = vec![String::from("hello"), String::from("world")];
+            let mut btree_words = BTreeSet::new();
+            btree_words.insert(String::from("hello"));
+            btree_words.insert(String::from("world"));
+
+            assert_eq!(words_to_btree_set(&words), btree_words);
+        }
+        {
+            let words = vec![String::from("hello"), String::from("hello")];
+            let mut btree_words = BTreeSet::new();
+            btree_words.insert(String::from("hello"));
+
+            assert_eq!(words_to_btree_set(&words), btree_words);
+        }
+        {
+            let words = vec![String::from("hello"), String::from("world"), String::from("hello")];
+            let mut btree_words = BTreeSet::new();
+            btree_words.insert(String::from("hello"));
+            btree_words.insert(String::from("world"));
+
+            assert_eq!(words_to_btree_set(&words), btree_words);
+        }
+    }
+}
+
 pub fn word_minus_ur(is_word: &str) -> String {
     let trimmed_word = is_word.trim();
     let ends_ur = trimmed_word.ends_with("ur");
@@ -134,6 +167,30 @@ pub fn words_from_jsonl(jsonl: &Vec<String>) -> BTreeSet<String> {
     }
 
     return words;
+}
+
+#[cfg(test)]
+mod words_from_jsonl_test {
+    use super::*;
+
+    #[test]
+    fn test() {
+        let jsonl = vec![
+            String::from("{ \"word\": \"hello\"}"),
+            String::from("{ \"word\": \"world\"}"),
+            String::from("{ \"word\": \"\"}"),
+            String::from("{ \"xx\": \"hello\"}"),
+            String::from("{ \"word\": \"world\"}"),
+        ];
+
+        let words = words_from_jsonl(&jsonl);
+
+        let mut btree_words = BTreeSet::new();
+        btree_words.insert(String::from("hello"));
+        btree_words.insert(String::from("world"));
+        btree_words.insert(String::from(""));
+        assert_eq!(words, btree_words);
+    }
 }
 
 pub fn normalize(text: &str) -> String {
