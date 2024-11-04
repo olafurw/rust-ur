@@ -21,7 +21,54 @@ pub fn file_to_vec(filename: &str) -> Vec<String> {
         lines.push(line.unwrap());
     }
 
-    return lines;
+    lines
+}
+
+pub fn extract_is_ur_words(filename: &str) -> BTreeSet<String> {
+    let file = File::open(filename);
+    if file.is_err() {
+        return BTreeSet::new();
+    }
+
+    let file = file.unwrap();
+    let reader = BufReader::new(file);
+
+    let mut btree_words = BTreeSet::new();
+    for line in reader.lines() {
+        if line.is_err() {
+            continue;
+        }
+
+        let word = line.unwrap();
+        let word_no_ur = word_minus_ur(&word);
+
+        if word_no_ur != word {
+            btree_words.insert(word_no_ur);
+        }
+    }
+
+    btree_words
+}
+
+pub fn extract_other_words(filename: &str) -> BTreeSet<String> {
+    let file = File::open(filename);
+    if file.is_err() {
+        return BTreeSet::new();
+    }
+
+    let file = file.unwrap();
+    let reader = BufReader::new(file);
+
+    let mut btree_words = BTreeSet::new();
+    for line in reader.lines() {
+        if line.is_err() {
+            continue;
+        }
+
+        btree_words.insert(line.unwrap());
+    }
+
+    btree_words
 }
 
 pub fn words_to_btree_set(words: &Vec<String>) -> BTreeSet<String> {
@@ -33,7 +80,6 @@ pub fn words_to_btree_set(words: &Vec<String>) -> BTreeSet<String> {
 
     btree_words
 }
-
 
 #[cfg(test)]
 mod words_to_btree_set_test {
@@ -57,7 +103,11 @@ mod words_to_btree_set_test {
             assert_eq!(words_to_btree_set(&words), btree_words);
         }
         {
-            let words = vec![String::from("hello"), String::from("world"), String::from("hello")];
+            let words = vec![
+                String::from("hello"),
+                String::from("world"),
+                String::from("hello"),
+            ];
             let mut btree_words = BTreeSet::new();
             btree_words.insert(String::from("hello"));
             btree_words.insert(String::from("world"));
@@ -91,45 +141,14 @@ mod word_minus_ur_test {
     }
 }
 
-pub fn extract_word(json_line: &String) -> Option<String> {
-    let json_line = json::parse(json_line.as_str());
-    if json_line.is_err() {
-        return None;
-    }
-
-    let json_line = json_line.unwrap();
-    let word = json_line["word"].as_str();
-    if word.is_none() {
-        return None;
-    }
-
-    return Some(word.unwrap().to_string().to_lowercase());
-}
-
-#[cfg(test)]
-mod extract_word_test {
-    use super::*;
-
-    #[test]
-    fn test() {
-        let extract_a = extract_word(&String::from("{ \"word\": \"hello\"}"));
-        assert_eq!(extract_a, Some(String::from("hello")));
-
-        let extract_b = extract_word(&String::from("{ \"word\": \"\"}"));
-        assert_eq!(extract_b, Some(String::from("")));
-
-        let extract_c = extract_word(&String::from("{ \"xx\": \"hello\"}"));
-        assert_eq!(extract_c, None);
-    }
-}
-
-pub fn word_is_alphabetic(word: &String) -> bool {
+pub fn word_is_alphabetic(word: &str) -> bool {
     for c in word.chars() {
         if !c.is_alphabetic() {
             return false;
         }
     }
-    return true;
+
+    true
 }
 
 #[cfg(test)]
@@ -138,64 +157,18 @@ mod word_is_alphabetic_test {
 
     #[test]
     fn test() {
-        assert_eq!(word_is_alphabetic(&String::from("hello")), true);
-        assert_eq!(word_is_alphabetic(&String::from("")), true);
-        assert_eq!(word_is_alphabetic(&String::from("    ")), false);
+        assert!(word_is_alphabetic("hello"));
+        assert!(word_is_alphabetic(""));
+        assert!(!word_is_alphabetic("    "));
 
-        assert_eq!(word_is_alphabetic(&String::from("123")), false);
-        assert_eq!(word_is_alphabetic(&String::from("  123  ")), false);
-        assert_eq!(word_is_alphabetic(&String::from("!@#!@#")), false);
-    }
-}
-
-pub fn words_from_jsonl(jsonl: &Vec<String>) -> BTreeSet<String> {
-    let mut words = BTreeSet::new();
-
-    for line in jsonl {
-        let word = extract_word(line);
-        if word.is_none() {
-            continue;
-        }
-
-        let word = word.unwrap();
-        let is_valid = word_is_alphabetic(&word);
-        if !is_valid {
-            continue;
-        }
-        
-        words.insert(word);
-    }
-
-    return words;
-}
-
-#[cfg(test)]
-mod words_from_jsonl_test {
-    use super::*;
-
-    #[test]
-    fn test() {
-        let jsonl = vec![
-            String::from("{ \"word\": \"hello\"}"),
-            String::from("{ \"word\": \"world\"}"),
-            String::from("{ \"word\": \"\"}"),
-            String::from("{ \"xx\": \"hello\"}"),
-            String::from("{ \"word\": \"world\"}"),
-        ];
-
-        let words = words_from_jsonl(&jsonl);
-
-        let mut btree_words = BTreeSet::new();
-        btree_words.insert(String::from("hello"));
-        btree_words.insert(String::from("world"));
-        btree_words.insert(String::from(""));
-        assert_eq!(words, btree_words);
+        assert!(!word_is_alphabetic("123"));
+        assert!(!word_is_alphabetic("  123  "));
+        assert!(!word_is_alphabetic("!@#!@#"));
     }
 }
 
 pub fn normalize(text: &str) -> String {
-    let sktext = deunicode(text);
-    sktext
+    deunicode(text)
 }
 
 #[cfg(test)]
